@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Species {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  birds     Bird[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Ring {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  bird      Bird?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Bird {
+  id          String       @id @default(cuid())
+  name        String
+  speciesId   String
+  species     Species      @relation(fields: [speciesId], references: [id])
+  ringId      String?      @unique
+  ring        Ring?        @relation(fields: [ringId], references: [id])
+  price       Int?
+  status      BirdStatus   @default(AVAILABLE)
+  description String?
+  imageUrl    String?
+  inquiries   InquiryLog[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model InquiryLog {
+  id        String   @id @default(cuid())
+  birdId    String
+  bird      Bird     @relation(fields: [birdId], references: [id])
+  name      String
+  contact   String
+  message   String?
+  createdAt DateTime @default(now())
+}
+
+enum BirdStatus {
+  AVAILABLE
+  SOLD
+  RESERVED
+}
