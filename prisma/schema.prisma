@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
   output   = "../app/generated/prisma"
@@ -13,47 +10,63 @@ datasource db {
 model Species {
   id        String   @id @default(cuid())
   name      String   @unique
+  slug      String   @unique
   birds     Bird[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Ring {
-  id        String   @id @default(cuid())
-  code      String   @unique
-  bird      Bird?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  code       String   @unique
+  material   String?
+  year       Int?
+  isAssigned Boolean  @default(false)
+  bird       Bird?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model Bird {
-  id          String       @id @default(cuid())
-  name        String
+  id          String      @id @default(cuid())
+  title       String
+  slug        String      @unique
   speciesId   String
-  species     Species      @relation(fields: [speciesId], references: [id])
-  ringId      String?      @unique
-  ring        Ring?        @relation(fields: [ringId], references: [id])
+  species     Species     @relation(fields: [speciesId], references: [id])
+  ringId      String?     @unique
+  ring        Ring?       @relation(fields: [ringId], references: [id])
   price       Int?
-  status      BirdStatus   @default(AVAILABLE)
+  gender      BirdGender  @default(UNKNOWN)
+  birthDate   DateTime?
+  parentTrah  String?
   description String?
-  imageUrl    String?
+  images      String[]
+  status      BirdStatus  @default(AVAILABLE)
+  isFeatured  Boolean     @default(false)
   inquiries   InquiryLog[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
 
 model InquiryLog {
-  id        String   @id @default(cuid())
-  birdId    String
-  bird      Bird     @relation(fields: [birdId], references: [id])
-  name      String
-  contact   String
-  message   String?
-  createdAt DateTime @default(now())
+  id              String   @id @default(cuid())
+  birdId          String
+  bird            Bird     @relation(fields: [birdId], references: [id])
+  customerName    String
+  customerPhone   String
+  customerAddress String?
+  waMessageSent   Boolean  @default(false)
+  createdAt       DateTime @default(now())
 }
 
 enum BirdStatus {
   AVAILABLE
-  SOLD
   RESERVED
+  SOLD
+}
+
+enum BirdGender {
+  MALE
+  FEMALE
+  UNKNOWN
 }
