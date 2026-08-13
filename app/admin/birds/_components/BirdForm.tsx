@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { BirdGender, BirdStatus, Species, Ring } from "../../../../app/generated/prisma";
 import { BirdFormInput } from "../../../../actions/bird.actions";
+import ImageUpload from "./ImageUpload";
 
 type BirdFormState = {
   title: string;
@@ -14,6 +15,7 @@ type BirdFormState = {
   birthDate: string;
   parentTrah: string;
   description: string;
+  images: string[];
   isFeatured: boolean;
   status: BirdStatus;
 };
@@ -37,6 +39,7 @@ export default function BirdForm({ species, rings, initialData, onSubmit, submit
     birthDate: initialData?.birthDate ?? "",
     parentTrah: initialData?.parentTrah ?? "",
     description: initialData?.description ?? "",
+    images: initialData?.images ?? [],
     isFeatured: initialData?.isFeatured ?? false,
     status: initialData?.status ?? BirdStatus.AVAILABLE,
   });
@@ -69,7 +72,7 @@ export default function BirdForm({ species, rings, initialData, onSubmit, submit
       description: form.description || undefined,
       isFeatured: form.isFeatured,
       status: form.status,
-      images: [],
+      images: form.images,
     };
 
     const result = await onSubmit(input);
@@ -149,6 +152,10 @@ export default function BirdForm({ species, rings, initialData, onSubmit, submit
           <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
           <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={4}
             className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none" />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Foto Burung</label>
+          <ImageUpload images={form.images} onChange={(imgs) => setForm((f) => ({ ...f, images: imgs }))} />
         </div>
         <div className="col-span-2 flex items-center gap-2">
           <input type="checkbox" id="isFeatured" checked={form.isFeatured} onChange={(e) => setForm((f) => ({ ...f, isFeatured: e.target.checked }))}
