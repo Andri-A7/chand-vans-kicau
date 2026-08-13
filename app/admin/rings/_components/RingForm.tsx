@@ -1,25 +1,31 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { Loader2, CircleDot } from "lucide-react";
 import { RingFormInput } from "../../../../actions/ring.actions";
 
 type RingFormState = {
   code: string;
-  material: string;
-  year: string;
+  isAssigned: boolean;
 };
 
 type Props = {
   initialData?: Partial<RingFormState>;
-  onSubmit: (data: RingFormInput) => Promise<{ success: boolean; error?: string; errors?: Record<string, string[]> }>;
+  onSubmit: (
+    data: RingFormInput
+  ) => Promise<{ success: boolean; error?: string; errors?: Record<string, string[]> }>;
   submitLabel?: string;
 };
 
-export default function RingForm({ initialData, onSubmit, submitLabel = "Simpan" }: Props) {
+export default function RingForm({
+  initialData,
+  onSubmit,
+  submitLabel = "Simpan",
+}: Props) {
   const [form, setForm] = useState<RingFormState>({
     code: initialData?.code ?? "",
-    material: initialData?.material ?? "",
-    year: initialData?.year ?? "",
+    isAssigned: initialData?.isAssigned ?? false,
   });
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
@@ -33,8 +39,7 @@ export default function RingForm({ initialData, onSubmit, submitLabel = "Simpan"
 
     const result = await onSubmit({
       code: form.code,
-      material: form.material || undefined,
-      year: form.year ? Number(form.year) : undefined,
+      isAssigned: form.isAssigned,
     });
 
     if (!result.success) {
@@ -45,38 +50,88 @@ export default function RingForm({ initialData, onSubmit, submitLabel = "Simpan"
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 max-w-md">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Kode Ring</label>
-        <input type="text" value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))} required
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900" placeholder="MB-2024-001" />
-        {errors.code && <p className="text-xs text-red-600 mt-1">{errors.code[0]}</p>}
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-lg overflow-hidden rounded-xl border border-slate-200 bg-white"
+    >
+      <div className="flex items-center gap-3 border-b border-slate-200 bg-slate-50 px-6 py-4">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600/10 text-blue-600">
+          <CircleDot className="h-5 w-5" aria-hidden="true" />
+        </div>
+        <div>
+          <h2 className="text-sm font-semibold text-slate-900">Detail Ring</h2>
+          <p className="text-xs text-slate-500">
+            Lengkapi informasi ring di bawah ini
+          </p>
+        </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Material</label>
-        <input type="text" value={form.material} onChange={(e) => setForm((f) => ({ ...f, material: e.target.value }))}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" placeholder="Aluminium, Plastik, dsb" />
+      <div className="space-y-5 p-6">
+        <div>
+          <label
+            htmlFor="ring-code"
+            className="mb-1.5 block text-sm font-medium text-slate-700"
+          >
+            Nomor Ring
+          </label>
+          <input
+            id="ring-code"
+            type="text"
+            value={form.code}
+            onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
+            required
+            placeholder="MB-2024-001"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 font-mono text-sm text-slate-900 placeholder:font-sans placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+          />
+          {errors.code && (
+            <p className="mt-1.5 text-xs text-red-600">{errors.code[0]}</p>
+          )}
+        </div>
+
+        <div>
+          <label
+            htmlFor="ring-status"
+            className="mb-1.5 block text-sm font-medium text-slate-700"
+          >
+            Status
+          </label>
+          <select
+            id="ring-status"
+            value={form.isAssigned ? "assigned" : "available"}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, isAssigned: e.target.value === "assigned" }))
+            }
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+          >
+            <option value="available">Available (Tersedia)</option>
+            <option value="assigned">Assigned (Terpakai)</option>
+          </select>
+        </div>
+
+        {error && (
+          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+            {error}
+          </p>
+        )}
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
-        <input type="number" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: e.target.value }))}
-          min="1900" max="2100"
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" placeholder="2024" />
-        {errors.year && <p className="text-xs text-red-600 mt-1">{errors.year[0]}</p>}
-      </div>
-
-      {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
-
-      <div className="flex gap-3">
-        <button type="submit" disabled={loading}
-          className="bg-gray-900 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors">
+      <div className="flex items-center justify-end gap-3 border-t border-slate-200 bg-slate-50 px-6 py-4">
+        <Link
+          href="/admin/rings"
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100"
+        >
+          Batal
+        </Link>
+        <button
+          type="submit"
+          disabled={loading}
+          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading && (
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+          )}
           {loading ? "Menyimpan..." : submitLabel}
         </button>
-        <a href="/admin/rings" className="px-5 py-2 rounded-lg text-sm text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
-          Batal
-        </a>
       </div>
     </form>
   );
