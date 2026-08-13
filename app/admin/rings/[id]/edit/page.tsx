@@ -46,8 +46,7 @@ export default async function EditRingPage({ params }: { params: Promise<{ id: s
       <RingForm
         initialData={{
           code: ring.code,
-          material: ring.material ?? "",
-          year: ring.year?.toString() ?? "",
+          isAssigned: ring.isAssigned,
         }}
         onSubmit={handleUpdate}
         submitLabel="Simpan Perubahan"

@@ -5,6 +5,12 @@ const SECRET = new TextEncoder().encode(
   process.env.ADMIN_SECRET_KEY ?? "fallback-dev-secret-change-in-production"
 );
 
+function passthrough(request: NextRequest, pathname: string) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", pathname);
+  return NextResponse.next({ request: { headers: requestHeaders } });
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -17,13 +23,13 @@ export async function proxy(request: NextRequest) {
 
     try {
       await jwtVerify(token, SECRET);
-      return NextResponse.next();
+      return passthrough(request, pathname);
     } catch {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
   }
 
-  return NextResponse.next();
+  return passthrough(request, pathname);
 }
 
 export const config = {

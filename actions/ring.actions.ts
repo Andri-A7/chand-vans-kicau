@@ -8,12 +8,14 @@ const RingSchema = z.object({
   code: z.string().min(1, "Kode ring wajib diisi"),
   material: z.string().optional(),
   year: z.coerce.number().int().min(1900).max(2100).optional().nullable(),
+  isAssigned: z.boolean().optional(),
 });
 
 export type RingFormInput = {
   code: string;
   material?: string;
   year?: number;
+  isAssigned?: boolean;
 };
 
 export async function createRingAction(formData: RingFormInput) {
@@ -26,6 +28,7 @@ export async function createRingAction(formData: RingFormInput) {
       code: parsed.data.code,
       material: parsed.data.material,
       year: parsed.data.year ?? undefined,
+      isAssigned: parsed.data.isAssigned,
     });
     revalidatePath("/admin/rings");
     return { success: true, data: ring };
@@ -44,6 +47,7 @@ export async function updateRingAction(id: string, formData: RingFormInput) {
       code: parsed.data.code,
       material: parsed.data.material,
       year: parsed.data.year ?? undefined,
+      isAssigned: parsed.data.isAssigned,
     });
     revalidatePath("/admin/rings");
     return { success: true, data: ring };

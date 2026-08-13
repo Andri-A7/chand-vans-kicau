@@ -32,13 +32,14 @@ export async function createRing(data: {
   code: string;
   material?: string;
   year?: number;
+  isAssigned?: boolean;
 }) {
   return prisma.ring.create({ data });
 }
 
 export async function updateRing(
   id: string,
-  data: { code?: string; material?: string; year?: number }
+  data: { code?: string; material?: string; year?: number; isAssigned?: boolean }
 ) {
   return prisma.ring.update({ where: { id }, data });
 }
