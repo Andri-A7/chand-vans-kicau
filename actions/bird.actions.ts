@@ -22,6 +22,7 @@ const BirdSchema = z.object({
   description: z.string().optional().nullable(),
   images: z.array(z.string().url()).default([]),
   isFeatured: z.boolean().default(false),
+  status: z.nativeEnum(BirdStatus).default(BirdStatus.AVAILABLE),
 });
 
 const UpdateStatusSchema = z.object({
@@ -29,7 +30,22 @@ const UpdateStatusSchema = z.object({
   status: z.nativeEnum(BirdStatus),
 });
 
-export async function createBirdAction(formData: unknown) {
+export type BirdFormInput = {
+  title: string;
+  slug: string;
+  speciesId: string;
+  ringId?: string;
+  price?: number;
+  gender?: BirdGender;
+  birthDate?: Date;
+  parentTrah?: string;
+  description?: string;
+  images?: string[];
+  isFeatured?: boolean;
+  status?: BirdStatus;
+};
+
+export async function createBirdAction(formData: BirdFormInput) {
   const parsed = BirdSchema.safeParse(formData);
   if (!parsed.success) {
     return { success: false, errors: parsed.error.flatten().fieldErrors };
@@ -51,7 +67,7 @@ export async function createBirdAction(formData: unknown) {
   }
 }
 
-export async function updateBirdAction(id: string, formData: unknown) {
+export async function updateBirdAction(id: string, formData: BirdFormInput) {
   const parsed = BirdSchema.partial().safeParse(formData);
   if (!parsed.success) {
     return { success: false, errors: parsed.error.flatten().fieldErrors };
