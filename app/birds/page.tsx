@@ -4,6 +4,8 @@ import { getBirdsFiltered } from "../../services/bird.service";
 import { getAllSpecies } from "../../services/species.service";
 import Link from "next/link";
 import { BirdStatus, BirdGender } from "../../app/generated/prisma";
+import BirdCard from "./_components/BirdCard";
+import { Search, SlidersHorizontal } from "lucide-react";
 
 type SearchParams = {
   search?: string;
@@ -20,7 +22,6 @@ export default async function BirdsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-
   const speciesList = await getAllSpecies();
   const selectedSpecies = speciesList.find((s) => s.slug === params.species);
 
@@ -34,122 +35,119 @@ export default async function BirdsPage({
   });
 
   const waNumber = process.env.WHATSAPP_NUMBER ?? "";
+  const hasFilters = params.search || params.species || params.gender || params.status;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Navbar */}
-      <nav className="border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur z-10">
-        <Link href="/" className="font-semibold text-gray-900">Chan Vans Kicau</Link>
-        <div className="flex items-center gap-6">
-          <Link href="/birds" className="text-sm text-gray-900 font-medium">Katalog</Link>
-          <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer"
-            className="bg-gray-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
-            WhatsApp
-          </a>
+      <nav className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+          <Link href="/" className="font-bold text-slate-900 dark:text-white tracking-tight">
+            Chan Vans <span className="text-emerald-500">Kicau</span>
+          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/birds" className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Katalog</Link>
+            <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer"
+              className="min-h-[36px] inline-flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors shadow-lg shadow-emerald-500/25">
+              WhatsApp
+            </a>
+          </div>
         </div>
       </nav>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Katalog Burung</h1>
-          <p className="text-gray-500 text-sm mt-1">{birds.length} burung ditemukan</p>
+        <div className="mb-5">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Katalog Burung</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+            {birds.length} burung ditemukan
+          </p>
         </div>
 
-        {/* Filter Bar */}
-        <form method="GET" className="flex flex-wrap gap-3 mb-8">
-          <input
-            type="text"
-            name="search"
-            defaultValue={params.search}
-            placeholder="Cari burung, spesies, ring..."
-            className="flex-1 min-w-48 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-          />
-          <select name="species" defaultValue={params.species ?? ""}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-            <option value="">Semua Spesies</option>
-            {speciesList.map((s) => (
-              <option key={s.id} value={s.slug}>{s.name}</option>
-            ))}
-          </select>
-          <select name="gender" defaultValue={params.gender ?? ""}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-            <option value="">Semua Gender</option>
-            <option value="MALE">Jantan</option>
-            <option value="FEMALE">Betina</option>
-            <option value="UNKNOWN">Tidak diketahui</option>
-          </select>
-          <select name="status" defaultValue={params.status ?? ""}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-            <option value="">Semua Status</option>
-            <option value="AVAILABLE">Tersedia</option>
-            <option value="RESERVED">Reserved</option>
-            <option value="SOLD">Terjual</option>
-          </select>
-          <select name="order" defaultValue={params.order ?? "latest"}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-            <option value="latest">Terbaru</option>
-            <option value="price_asc">Harga Terendah</option>
-            <option value="price_desc">Harga Tertinggi</option>
-          </select>
-          <button type="submit"
-            className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors">
-            Cari
-          </button>
-          {(params.search || params.species || params.gender || params.status) && (
-            <Link href="/birds" className="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-colors">
-              Reset
-            </Link>
-          )}
+        {/* Search + Filter */}
+        <form method="GET" className="mb-6 space-y-3">
+          {/* Search bar */}
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              name="search"
+              defaultValue={params.search}
+              placeholder="Cari burung, spesies, kode ring..."
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+            />
+          </div>
+
+          {/* Filter pills - scrollable horizontal */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <div className="flex items-center gap-1.5 shrink-0 text-slate-500 dark:text-slate-400">
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span className="text-xs font-medium">Filter:</span>
+            </div>
+
+            <select name="species" defaultValue={params.species ?? ""}
+              className="shrink-0 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 cursor-pointer">
+              <option value="">Semua Spesies</option>
+              {speciesList.map((s) => <option key={s.id} value={s.slug}>{s.name}</option>)}
+            </select>
+
+            <select name="status" defaultValue={params.status ?? ""}
+              className="shrink-0 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 cursor-pointer">
+              <option value="">Semua Status</option>
+              <option value="AVAILABLE">Tersedia</option>
+              <option value="RESERVED">Reserved</option>
+              <option value="SOLD">Terjual</option>
+            </select>
+
+            <select name="gender" defaultValue={params.gender ?? ""}
+              className="shrink-0 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 cursor-pointer">
+              <option value="">Semua Gender</option>
+              <option value="MALE">Jantan</option>
+              <option value="FEMALE">Betina</option>
+            </select>
+
+            <select name="order" defaultValue={params.order ?? "latest"}
+              className="shrink-0 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 cursor-pointer">
+              <option value="latest">Terbaru</option>
+              <option value="price_asc">Harga ↑</option>
+              <option value="price_desc">Harga ↓</option>
+            </select>
+
+            <button type="submit"
+              className="shrink-0 min-h-[32px] px-4 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold transition-colors shadow-md shadow-emerald-500/25">
+              Cari
+            </button>
+
+            {hasFilters && (
+              <Link href="/birds"
+                className="shrink-0 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                Reset
+              </Link>
+            )}
+          </div>
         </form>
 
         {/* Grid */}
         {birds.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-gray-400 text-lg mb-2">Tidak ada burung ditemukan</p>
-            <Link href="/birds" className="text-sm text-gray-900 underline">Lihat semua burung</Link>
+            <div className="text-5xl mb-4">🔍</div>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">Tidak ada burung ditemukan</p>
+            <Link href="/birds" className="mt-3 inline-block text-sm text-emerald-600 dark:text-emerald-400 underline">
+              Lihat semua burung
+            </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {birds.map((bird) => (
-              <Link key={bird.id} href={`/birds/${bird.slug}`}
-                className="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
-                <div className="aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
-                  {bird.images[0] ? (
-                    <img src={bird.images[0]} alt={bird.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                  ) : (
-                    <span className="text-5xl">🐦</span>
-                  )}
-                </div>
-                <div className="p-3">
-                  <p className="font-medium text-gray-900 text-sm truncate">{bird.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{bird.species.name}</p>
-                  {bird.ring && (
-                    <p className="text-xs text-gray-400 font-mono mt-0.5">{bird.ring.code}</p>
-                  )}
-                  <div className="flex items-center justify-between mt-2">
-                    <p className="text-sm font-semibold text-gray-900">
-                      {bird.price ? `Rp ${bird.price.toLocaleString("id-ID")}` : "—"}
-                    </p>
-                    <span className={`text-xs px-1.5 py-0.5 rounded ${
-                      bird.status === "AVAILABLE" ? "bg-green-50 text-green-700" :
-                      bird.status === "RESERVED" ? "bg-yellow-50 text-yellow-700" :
-                      "bg-gray-100 text-gray-500"
-                    }`}>
-                      {bird.status === "AVAILABLE" ? "Tersedia" :
-                       bird.status === "RESERVED" ? "Reserved" : "Terjual"}
-                    </span>
-                  </div>
-                </div>
-              </Link>
+              <BirdCard key={bird.id} bird={bird} />
             ))}
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 px-6 py-6 text-center mt-12">
-        <p className="text-sm text-gray-400">© 2025 Chan Vans Kicau. All rights reserved.</p>
+      <footer className="mt-16 border-t border-slate-200 dark:border-slate-800 px-4 py-6 text-center">
+        <p className="text-xs text-slate-400">© 2025 Chan Vans Kicau. All rights reserved.</p>
       </footer>
     </div>
   );
