@@ -51,7 +51,7 @@ model Bird {
 model InquiryLog {
   id              String   @id @default(cuid())
   birdId          String
-  bird            Bird     @relation(fields: [birdId], references: [id])
+  bird            Bird     @relation(fields: [birdId], references: [id], onDelete: Cascade)
   customerName    String
   customerPhone   String
   customerAddress String?
