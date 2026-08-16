@@ -50,3 +50,4 @@ skills-lock.json
 
 # Generated Prisma client
 app/generated/
+project_dump.txt

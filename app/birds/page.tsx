@@ -1,3 +1,14 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Katalog Burung",
+  description: "Jelajahi katalog burung kicau premium kami. Filter berdasarkan spesies, gender, harga, dan status ketersediaan.",
+  openGraph: {
+    title: "Katalog Burung | Chan Vans Kicau",
+    description: "Jelajahi koleksi burung kicau premium dengan ring resmi.",
+  },
+};
+
 export const dynamic = "force-dynamic";
 
 import { getBirdsFiltered } from "../../services/bird.service";
