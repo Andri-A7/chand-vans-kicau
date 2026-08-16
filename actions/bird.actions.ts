@@ -20,7 +20,7 @@ const BirdSchema = z.object({
   birthDate: z.coerce.date().optional().nullable(),
   parentTrah: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
-  images: z.array(z.string().url()).default([]),
+  images: z.array(z.string()).default([]),
   isFeatured: z.boolean().default(false),
   status: z.nativeEnum(BirdStatus).default(BirdStatus.AVAILABLE),
 });
@@ -45,6 +45,14 @@ export type BirdFormInput = {
   status?: BirdStatus;
 };
 
+function getStatusTimestamps(status: BirdStatus) {
+  return {
+    reservedAt: status === BirdStatus.RESERVED ? new Date() : null,
+    soldAt: status === BirdStatus.SOLD ? new Date() : null,
+    availableAt: status === BirdStatus.AVAILABLE ? new Date() : undefined,
+  };
+}
+
 export async function createBirdAction(formData: BirdFormInput) {
   const parsed = BirdSchema.safeParse(formData);
   if (!parsed.success) {
@@ -58,6 +66,7 @@ export async function createBirdAction(formData: BirdFormInput) {
       birthDate: parsed.data.birthDate ?? undefined,
       parentTrah: parsed.data.parentTrah ?? undefined,
       description: parsed.data.description ?? undefined,
+      ...getStatusTimestamps(parsed.data.status ?? BirdStatus.AVAILABLE),
     });
     revalidatePath("/admin/birds");
     revalidatePath("/birds");
@@ -73,6 +82,9 @@ export async function updateBirdAction(id: string, formData: BirdFormInput) {
     return { success: false, errors: parsed.error.flatten().fieldErrors };
   }
   try {
+    const timestamps = parsed.data.status
+      ? getStatusTimestamps(parsed.data.status)
+      : {};
     const bird = await updateBird(id, {
       ...parsed.data,
       ringId: parsed.data.ringId ?? undefined,
@@ -80,6 +92,7 @@ export async function updateBirdAction(id: string, formData: BirdFormInput) {
       birthDate: parsed.data.birthDate ?? undefined,
       parentTrah: parsed.data.parentTrah ?? undefined,
       description: parsed.data.description ?? undefined,
+      ...timestamps,
     });
     revalidatePath("/admin/birds");
     revalidatePath("/birds");
@@ -96,7 +109,8 @@ export async function updateBirdStatusAction(formData: unknown) {
     return { success: false, errors: parsed.error.flatten().fieldErrors };
   }
   try {
-    const bird = await updateBirdStatus(parsed.data.id, parsed.data.status);
+    const timestamps = getStatusTimestamps(parsed.data.status);
+    const bird = await updateBirdStatus(parsed.data.id, parsed.data.status, timestamps);
     revalidatePath("/admin/birds");
     revalidatePath("/birds");
     revalidatePath(`/birds/${bird.slug}`);

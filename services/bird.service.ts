@@ -141,8 +141,8 @@ export async function updateBird(
   return prisma.bird.update({ where: { id }, data });
 }
 
-export async function updateBirdStatus(id: string, status: BirdStatus) {
-  return prisma.bird.update({ where: { id }, data: { status } });
+export async function updateBirdStatus(id: string, status: BirdStatus, timestamps?: { reservedAt?: Date | null; soldAt?: Date | null; availableAt?: Date }) {
+  return prisma.bird.update({ where: { id }, data: { status, ...timestamps } });
 }
 
 export async function deleteBird(id: string) {
