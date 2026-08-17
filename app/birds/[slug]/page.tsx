@@ -1,3 +1,21 @@
+import type { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const { getBirdBySlug } = await import("../../../services/bird.service");
+  const bird = await getBirdBySlug(slug);
+  if (!bird) return { title: "Burung Tidak Ditemukan" };
+  return {
+    title: bird.title,
+    description: bird.description ?? `${bird.title} — ${bird.species.name}.${bird.ring ? " Ring: " + bird.ring.code + "." : ""} Harga: ${bird.price ? "Rp " + bird.price.toLocaleString("id-ID") : "Hubungi kami"}.`,
+    openGraph: {
+      title: bird.title + " | Chan Vans Kicau",
+      description: bird.description ?? bird.title,
+      images: bird.images[0] ? [{ url: bird.images[0], width: 800, height: 800, alt: bird.title }] : [],
+    },
+  };
+}
+
 export const dynamic = "force-dynamic";
 
 import { getBirdBySlug } from "../../../services/bird.service";
