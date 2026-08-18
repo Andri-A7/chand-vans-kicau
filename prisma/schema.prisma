@@ -28,28 +28,30 @@ model Ring {
 }
 
 model Bird {
-  id          String      @id @default(cuid())
-  title       String
-  slug        String      @unique
-  speciesId   String
-  species     Species     @relation(fields: [speciesId], references: [id])
-  ringId      String?     @unique
-  ring        Ring?       @relation(fields: [ringId], references: [id])
-  price       Int?
-  gender      BirdGender  @default(UNKNOWN)
-  birthDate   DateTime?
-  parentTrah  String?
-  description String?
-  images      String[]
-  status      BirdStatus  @default(AVAILABLE)
-  isFeatured  Boolean     @default(false)
-  availableAt DateTime    @default(now())
-  reservedAt  DateTime?
-  soldAt      DateTime?
-  inquiries   InquiryLog[]
-  reviews     Review[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id            String         @id @default(cuid())
+  title         String
+  slug          String         @unique
+  speciesId     String
+  species       Species        @relation(fields: [speciesId], references: [id])
+  ringId        String?        @unique
+  ring          Ring?          @relation(fields: [ringId], references: [id])
+  price         Int?
+  gender        BirdGender     @default(UNKNOWN)
+  birthDate     DateTime?
+  parentTrah    String?
+  description   String?
+  images        String[]
+  audioUrl      String?
+  status        BirdStatus     @default(AVAILABLE)
+  isFeatured    Boolean        @default(false)
+  availableAt   DateTime       @default(now())
+  reservedAt    DateTime?
+  soldAt        DateTime?
+  inquiries     InquiryLog[]
+  reviews       Review[]
+  payments      PaymentProof[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 model InquiryLog {
@@ -61,6 +63,19 @@ model InquiryLog {
   customerAddress String?
   waMessageSent   Boolean  @default(false)
   createdAt       DateTime @default(now())
+}
+
+model PaymentProof {
+  id              String        @id @default(cuid())
+  birdId          String
+  bird            Bird          @relation(fields: [birdId], references: [id], onDelete: Cascade)
+  buyerName       String
+  buyerWhatsapp   String
+  proofImageUrl   String
+  amountPaid      Int
+  paymentType     PaymentType   @default(DP)
+  status          PaymentStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
 }
 
 model Banner {
@@ -86,6 +101,42 @@ model Review {
   createdAt DateTime   @default(now())
 }
 
+model Post {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String?
+  content     String
+  thumbnail   String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SiteSetting {
+  id                    String  @id @default("global_setting")
+  storeName             String  @default("Chan Vans Kicau")
+  tagline               String?
+  description           String?
+  whatsapp              String?
+  instagramUrl          String?
+  facebookUrl           String?
+  youtubeUrl            String?
+  address               String?
+  googleMapsUrl         String?
+  announcementText      String?
+  isAnnouncementActive  Boolean @default(false)
+}
+
+model SeoSetting {
+  id               String  @id @default(cuid())
+  pageSlug         String  @unique
+  metaTitle        String?
+  metaDescription  String?
+  keywords         String?
+  ogImageUrl       String?
+}
+
 enum BirdStatus {
   AVAILABLE
   RESERVED
@@ -101,4 +152,15 @@ enum BirdGender {
 enum ReviewType {
   BIRD
   STORE
+}
+
+enum PaymentType {
+  DP
+  FULL
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
